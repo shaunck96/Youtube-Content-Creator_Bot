@@ -514,9 +514,9 @@ def sentiment_evaluation_df(comments_context):
   sentiment_output = sentiment_output_parser(sentiment_output)
   return sentiment_output
 
-openai.api_key = "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"
-channel_id ="UCqZE1WgKgZ9oeICTrov94yQ" #Academy of Wealth: UCqZE1WgKgZ9oeICTrov94yQ#
-api_key = 'AIzaSyBRvAdrZonkE--IGTqU22So6Dnt-6xfJg0'
+openai.api_key = ""
+channel_id =""
+api_key = ''
 url_list = url_extractor_by_channel(channel_id)
 
 #yt = YTstats(api_key, channel_id)
