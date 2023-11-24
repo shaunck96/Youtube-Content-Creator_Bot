@@ -1,0 +1,12 @@
+scrapetube
+pytube
+huggingsound
+transformers
+requests
+tqdm
+openai==0.28
+faster-whisper
+eyed3
+tiktoken
+langchain
+youtube-comment-downloader
