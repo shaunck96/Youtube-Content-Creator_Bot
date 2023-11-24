@@ -32,7 +32,7 @@ from youtube_comment_downloader import *
 from .utils import *
 
 # Open the text file for reading
-file_path = '/content/sniper_wolf.txt'  # Replace 'urls.txt' with the path to your text file
+file_path = './sniper_wolf.txt'  # Replace 'urls.txt' with the path to your text file
 url_list = []
 
 try:
