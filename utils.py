@@ -29,6 +29,16 @@ from langchain.prompts import PromptTemplate, ChatPromptTemplate, HumanMessagePr
 from langchain.chat_models import ChatOpenAI
 from itertools import islice
 from youtube_comment_downloader import *
+from pydantic import BaseModel, Field
+from langchain.output_parsers import PydanticOutputParser
+from pydantic import BaseModel, Field
+from langchain.output_parsers import PydanticOutputParser
+from itertools import islice
+from youtube_comment_downloader import *
+from pytube import YouTube
+import cv2
+import base64
+import requests
 
 def split_into_chunks(text, chunk_size=8000):
     return [text[i:i+chunk_size] for i in range(0, len(text), chunk_size)]
@@ -491,3 +501,114 @@ def sentiment_evaluation_df(comments_context):
   sentiment_output = response.choices[0].message.content
   sentiment_output = sentiment_output_parser(sentiment_output)
   return sentiment_output
+
+def video_content_extractor(url):
+  # Where to save the video
+  SAVE_PATH = r"/content/"
+
+  # Link of the video to be downloaded
+  link = url
+
+  try:
+      # Object creation using YouTube
+      yt = YouTube(link)
+  except Exception as e:
+      print("Connection Error:", str(e))
+
+  # Get all video streams with mp4 format
+  mp4_streams = yt.streams.filter(file_extension='mp4')
+
+  # Choose the stream with the desired resolution (e.g., '720p')
+  selected_stream = mp4_streams.filter(res='720p').first()
+
+  if selected_stream:
+      try:
+          # Download the video
+          selected_stream.download(output_path=SAVE_PATH)
+          print('Video downloaded successfully!')
+      except Exception as e:
+          print("Download Error:", str(e))
+  else:
+      print("No suitable video stream found.")
+
+  print('Task Completed!')
+
+  # Open the video file
+  vidcap = cv2.VideoCapture('/content/Joe Rogan SHOCKED By Hitler Conspiracy Theory.mp4')
+
+  # Get the total number of frames in the video
+  total_frames = int(vidcap.get(cv2.CAP_PROP_FRAME_COUNT))
+
+  # Initialize variables
+  success, image = vidcap.read()
+
+  # Capture the starting frame (frame 0)
+  cv2.imwrite("/content/Joe Rogan SHOCKED By Hitler Conspiracy Theory Video Frames/start_frame.jpg", image)
+  print('Saved starting frame')
+
+  # Move to the middle frame
+  #middle_frame_number = total_frames // 2
+  #vidcap.set(cv2.CAP_PROP_POS_FRAMES, middle_frame_number)
+  #success, image = vidcap.read()
+
+  # Capture the middle frame
+  #cv2.imwrite("/content/Joe Rogan SHOCKED By Hitler Conspiracy Theory Video Frames/middle_frame.jpg", image)
+  #print('Saved middle frame')
+
+  # Move to the last frame
+  #vidcap.set(cv2.CAP_PROP_POS_FRAMES, total_frames - 1)
+  #success, image = vidcap.read()
+
+  # Capture the ending frame (last frame)
+  #cv2.imwrite("/content/Joe Rogan SHOCKED By Hitler Conspiracy Theory Video Frames/end_frame.jpg", image)
+  #print('Saved ending frame')
+
+  # Release the video capture object
+  vidcap.release()
+
+  print('Frames captured: Starting')#, Middle, and Ending frames')
+
+  # OpenAI API Key
+  api_key = "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"
+
+  # Function to encode the image
+  def encode_image(image_path):
+    with open(image_path, "rb") as image_file:
+      return base64.b64encode(image_file.read()).decode('utf-8')
+
+  # Path to your image
+  image_path = "/content/Joe Rogan SHOCKED By Hitler Conspiracy Theory Video Frames/frame1002.jpg"
+
+  # Getting the base64 string
+  base64_image = encode_image(image_path)
+
+  headers = {
+    "Content-Type": "application/json",
+    "Authorization": f"Bearer {api_key}"
+  }
+
+  payload = {
+    "model": "gpt-4-vision-preview",
+    "messages": [
+      {
+        "role": "user",
+        "content": [
+          {
+            "type": "text",
+            "text": "What’s is the setting of this video?"
+          },
+          {
+            "type": "image_url",
+            "image_url": {
+              "url": f"data:image/jpeg;base64,{base64_image}"
+            }
+          }
+        ]
+      }
+    ],
+    "max_tokens": 300
+  }
+
+  response = requests.post("https://api.openai.com/v1/chat/completions", headers=headers, json=payload)
+
+  return dict(response.json())['choices'][0]['message']['content']
