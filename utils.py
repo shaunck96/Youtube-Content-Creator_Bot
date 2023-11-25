@@ -569,7 +569,7 @@ def video_content_extractor(url):
   print('Frames captured: Starting')#, Middle, and Ending frames')
 
   # OpenAI API Key
-  api_key = "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"
+  api_key = ""
 
   # Function to encode the image
   def encode_image(image_path):
